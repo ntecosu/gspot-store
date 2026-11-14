@@ -460,6 +460,7 @@ html.modal{overflow:hidden}
 .luck__form[hidden],.luck__code[hidden]{display:none}
 .luck__form input{min-height:54px;padding:0 20px;border:0;border-radius:999px;background:#fff;color:#0b0b0b;text-align:center}
 .luck__form .btn{width:100%}
+.luck__legal{margin:2px 0 0;font-size:11px;line-height:1.4;opacity:.75;text-align:center}.luck__legal a{color:inherit}
 .luck__err{min-height:1.2em;margin:0;font-size:14px;color:#ff8a9a}
 .luck__code{display:grid;gap:8px;margin-top:20px}
 .luck__code p{margin:0;font-stretch:80%;font-weight:800;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
@@ -619,12 +620,12 @@ html.pv-open .claim-tab{display:none}
       <input id="luckEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required>
       <button class="btn" type="submit">unlock my 10%</button>
       <p class="luck__err" id="luckErr" role="status"></p>
+      <p class="luck__legal">You'll get GSPOT emails: drops and offers. Unsubscribe anytime. <a href="/privacy.html" target="_blank" rel="noopener">Privacy</a></p>
     </form>
     <div class="luck__code" id="luckCode" hidden>
       <p>your code</p>
       <button class="luck__copy" id="luckCopy" type="button">GSPOT10</button>
       <small id="luckCopied">Tap to copy. Use it at checkout.</small>
-      <small class="luck__prev">Preview: sign-ups and codes switch on when the store goes live.</small>
     </div>
   </div>
 </div>
@@ -1310,10 +1311,19 @@ html.pv-open .claim-tab{display:none}
   var CODES={GSPOT10:10},CODE='',MODE='preview';
   var CK='gspot_cart',cartEl=$('cart'),cart=[],cartOpen=false,cartFocus=null;
   try{cart=JSON.parse(localStorage.getItem(CK)||'[]')||[]}catch(e){cart=[]}
+  (function(){var m=location.search.match(/[?&]cart=([A-Za-z0-9_-]+)/);if(!m)return;
+    try{var s=m[1].replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';var arr=JSON.parse(decodeURIComponent(escape(atob(s))));
+      if(Array.isArray(arr)){cart=arr.filter(function(a){return Array.isArray(a)&&a.length===4}).map(function(a){return {slug:String(a[0]),c:+a[1]||0,s:String(a[2]),q:Math.min(9,Math.max(1,+a[3]||1))}});
+        try{localStorage.setItem(CK,JSON.stringify(cart))}catch(e){}window.__openCartSoon=true}}catch(e){}
+    try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}})();
   cart=cart.filter(function(l){return PRODUCTS.some(function(p){return p.slug===l.slug})});
   function money(n){return fmt(n)}
   function priceOf(p){return parseFloat(String(p.price).replace(/[^0-9.]/g,''))||0}
-  function saveCart(){try{localStorage.setItem(CK,JSON.stringify(cart))}catch(e){}}
+  function saveCart(){try{localStorage.setItem(CK,JSON.stringify(cart))}catch(e){}syncCart()}
+  function knownEmail(){try{return localStorage.getItem('gspot_email')||''}catch(e){return ''}}
+  function rememberEmail(v){try{localStorage.setItem('gspot_email',v.toLowerCase())}catch(e){}}
+  var syncT=0;function syncCart(){var em=knownEmail();if(!em||MODE==='preview')return;clearTimeout(syncT);syncT=setTimeout(function(){
+    try{fetch('/api/cart',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:em,items:cart.map(function(l){return {slug:l.slug,c:l.c,s:l.s,q:l.q}})}),keepalive:true})}catch(e){}},4000)}
   function drawCart(){
     var n=0,total=0,list=$('cartList');list.textContent='';
     cart.forEach(function(l,i){var p=PRODUCTS.filter(function(x){return x.slug===l.slug})[0],c=p.colors[l.c]||p.colors[0],pr=priceOf(p);n+=l.q;total+=pr*l.q;
@@ -1360,7 +1370,7 @@ html.pv-open .claim-tab{display:none}
       createOrder:function(){return fetch('/api/paypal/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({items:cartItems(),code:CODE})})
         .then(function(r){return r.json().then(function(d){if(!r.ok||!d.id)throw new Error(d.error||'Checkout could not start.');return d.id})})},
       onApprove:function(data,actions){$('cartMsg').textContent='Confirming your payment…';
-        return fetch('/api/paypal/capture',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:data.orderID})})
+        return fetch('/api/paypal/capture',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:data.orderID,email:knownEmail()})})
           .then(function(r){return r.json()}).then(function(d){
             if(d.retry){$('cartMsg').textContent=d.error;return actions.restart()}
             if(!d.ok)throw new Error(d.error||'Payment could not be completed.');
@@ -1393,6 +1403,7 @@ html.pv-open .claim-tab{display:none}
         msg.textContent="You're on the list. We'll email you first when drop 01 opens, with your 10% code.";if(window.gtag)try{gtag('event','reserve')}catch(_){}})
       .catch(function(err){b.disabled=false;msg.textContent=err.message||'Something went wrong. Try again.'})});
   drawCart();refreshLoc();
+  if(window.__openCartSoon)setTimeout(openCart,600);
   $('pvAdd').addEventListener('click',function(){if(!cur)return;var sb=$('pvSizes').querySelector('[aria-pressed="true"]'),s=sb?sb.textContent:'One size';
     var l=cart.filter(function(x){return x.slug===cur.slug&&x.c===curC&&x.s===s})[0];if(l)l.q=Math.min(9,l.q+1);else cart.push({slug:cur.slug,c:curC,s:s,q:1});
     saveCart();clack(.08,1800);track('add_to_cart',cur.slug);openCart()});
@@ -1400,7 +1411,7 @@ html.pv-open .claim-tab{display:none}
   $('form').addEventListener('submit',function(e){e.preventDefault();
     var v=$('email').value.trim();if(!/^\S+@\S+\.\S+$/.test(v)){$('note').textContent='Enter an email address like you@email.com.';return}
     if(MODE==='preview'){$('note').textContent='This is a preview, so nothing was saved yet. Sign-ups switch on when the store goes live.';return}
-    subscribe(v,'footer').then(function(){$('note').textContent="You're in. Watch your inbox for drop 01."},function(){$('note').textContent='Something went wrong. Try again.'})});
+    subscribe(v,'footer').then(function(){rememberEmail(v);syncCart();$('note').textContent="You're in. Check your inbox for your 10% code."},function(){$('note').textContent='Something went wrong. Try again.'})});
   function subscribe(email,src){return fetch('/api/subscribe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:email,src:src})}).then(function(r){if(!r.ok)throw new Error('fail')})}
 
   // ---- footer: rotating perks, placeholder links
@@ -1448,7 +1459,7 @@ html.pv-open .claim-tab{display:none}
   $('claimTab').addEventListener('click',function(){openLuck()});
   $('luckForm').addEventListener('submit',function(e){e.preventDefault();var v=$('luckEmail').value.trim();
     if(!/^\S+@\S+\.\S+$/.test(v)){$('luckErr').textContent='Enter an email address like you@email.com.';return}
-    if(MODE!=='preview')subscribe(v,'scratch').catch(function(){});
+    if(MODE!=='preview')subscribe(v,'scratch').then(function(){rememberEmail(v);syncCart()},function(){});
     $('luckErr').textContent='';$('luckForm').hidden=true;$('luckCode').hidden=false;$('luckSub').textContent="You're in. Here's your 10%.";lsSet('done');$('claimTab').hidden=true;ting()});
   $('luckCopy').addEventListener('click',function(){var c='GSPOT10',done=function(){$('luckCopied').textContent='Copied. Use it at checkout.'};
     try{navigator.clipboard.writeText(c).then(done,function(){})}catch(e){}});

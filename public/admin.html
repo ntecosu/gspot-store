@@ -30,6 +30,7 @@ th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);whit
 th{color:var(--mute);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
 tr:last-child td{border-bottom:0}
 .empty{color:var(--mute);padding:14px}
+.ship{display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:420px}.ship input{min-height:34px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:#0b0b0b;color:var(--ink);font:inherit;font-size:13px;flex:1 1 110px}.ship button{min-height:34px;padding:0 12px;font-size:13px}.ship span{font-size:12px;color:var(--mute)}
 .dl{background:transparent;border:1px solid var(--line);color:var(--ink);min-height:38px;padding:0 16px;font-size:13px;margin-top:10px}
 </style>
 </head>
@@ -63,6 +64,7 @@ function load(){var k=$('k').value.trim();try{sessionStorage.setItem('gk',k)}cat
     var rev=d.orders.reduce(function(s,o){return s+o.total},0);var k=[['orders',d.orders.length,1],['revenue',eur(rev),1],['product views',v],['add to cart',a],['checkout clicks',c],['emails',d.subscriberCount],['add-to-cart rate',v?Math.round(a/v*100)+'%':'–']];if(r)k.push(['reservations',r]);
     $('kpis').innerHTML='';k.forEach(function(x){var e=document.createElement('div');e.className='kpi'+(x[2]?' hot':'');e.innerHTML='<b></b><span></span>';e.firstChild.textContent=x[1];e.lastChild.textContent=x[0];$('kpis').appendChild(e)});
     table($('ord'),[['when',function(r){return when(r.ts)}],['order',function(r){return r.id}],['email',function(r){return r.email||''}],['name',function(r){return r.name||''}],['ship to',function(r){return r.address||''}],['items',function(r){return r.items.map(function(i){return i.q+'× '+i.slug+' '+(i.color||'')+' '+(i.size||'')}).join(', ')}],['paid',function(r){return eur(r.total)}],['code',function(r){return r.code||''}]],d.orders);
+    shipForms();
     table($('items'),[['item',function(r){return r.slug}],['views',function(r){return r.views}],['add to cart',function(r){return r.adds}]],d.bySlug);
     $('resWrap').hidden=!d.reservations.length;
     table($('res'),[['when',function(r){return when(r.ts)}],['email',function(r){return r.email}],['items',function(r){return r.items.map(function(i){return i.q+'× '+i.slug+' '+i.size}).join(', ')}],['value',function(r){return eur(r.total)}],['country',function(r){return r.country||''}]],d.reservations);
@@ -71,6 +73,16 @@ function load(){var k=$('k').value.trim();try{sessionStorage.setItem('gk',k)}cat
     table($('subs'),[['email',function(r){return r.email}],['from',function(r){return r.src}],['when',function(r){return when(r.ts)}],['country',function(r){return r.country||''}]],d.subscribers);
   }).catch(function(e){$('err').textContent=e.message;$('out').hidden=true})}
 $('f').addEventListener('submit',function(e){e.preventDefault();load()});
+function shipForms(){var rows=$('ord').querySelectorAll('tr');if(!data.orders.length)return;
+  rows[0].appendChild(document.createElement('th')).textContent='shipping';
+  data.orders.forEach(function(o,i){var td=rows[i+1].appendChild(document.createElement('td'));
+    if(o.shipped){td.textContent='✓ '+[o.carrier,o.tracking].filter(Boolean).join(' ');td.style.color='#7fd99a';return}
+    var f=document.createElement('form');f.className='ship';f.innerHTML='<input name="carrier" placeholder="carrier (e.g. Omniva)"><input name="tracking" placeholder="tracking number"><input name="url" placeholder="tracking link (https://…)"><button>mark shipped + email</button><span></span>';
+    f.addEventListener('submit',function(e){e.preventDefault();var b=f.querySelector('button'),s=f.querySelector('span');b.disabled=true;s.textContent='';
+      fetch('/api/ship',{method:'POST',headers:{'content-type':'application/json','x-admin-key':$('k').value.trim()},body:JSON.stringify({id:o.id,carrier:f.carrier.value,tracking:f.tracking.value,url:f.url.value})})
+        .then(function(r){return r.json()}).then(function(d){if(!d.ok)throw new Error(d.error||'Error');s.textContent=d.emailed?'emailed ✓':'saved (no email sent)';setTimeout(load,1200)})
+        .catch(function(err){b.disabled=false;s.textContent=err.message})});
+    td.appendChild(f)})}
 $('dlOrd').addEventListener('click',function(){csv('gspot-orders.csv',[['when','order','email','name','address','items','paid_eur','code','status']].concat(data.orders.map(function(r){return [r.ts,r.id,r.email,r.name,r.address,r.items.map(function(i){return i.q+'x '+i.slug+' '+i.color+' '+i.size}).join('; '),(r.total/100).toFixed(2),r.code,r.status]})))});
 $('dlRes').addEventListener('click',function(){csv('gspot-reservations.csv',[['when','email','items','value_eur','country']].concat(data.reservations.map(function(r){return [r.ts,r.email,r.items.map(function(i){return i.q+'x '+i.slug+' '+i.color+' '+i.size}).join('; '),(r.total/100).toFixed(2),r.country]})))});
 $('dlSubs').addEventListener('click',function(){csv('gspot-emails.csv',[['email','source','when','country']].concat(data.subscribers.map(function(r){return [r.email,r.src,r.ts,r.country]})))});

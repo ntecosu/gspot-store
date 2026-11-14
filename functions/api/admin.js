@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
     d.prepare('SELECT email, ts, src, country FROM subscribers ORDER BY ts DESC LIMIT 1000').all(),
     d.prepare('SELECT COUNT(*) n FROM subscribers').first(),
     d.prepare('SELECT country, COUNT(*) n FROM events WHERE country IS NOT NULL GROUP BY country ORDER BY n DESC LIMIT 15').all(),
-    d.prepare('SELECT id, ts, provider, status, email, name, address, items, total, currency, code, country FROM orders ORDER BY ts DESC LIMIT 500').all(),
+    d.prepare('SELECT o.id, o.ts, o.provider, o.status, o.email, o.name, o.address, o.items, o.total, o.currency, o.code, o.country, o.shipped, s.carrier, s.tracking, s.url FROM orders o LEFT JOIN shipments s ON s.order_id = o.id ORDER BY o.ts DESC LIMIT 500').all(),
   ]);
   return json({
     funnel: Object.fromEntries(funnel.results.map((r) => [r.e, r.n])),

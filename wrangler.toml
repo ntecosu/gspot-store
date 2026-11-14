@@ -8,6 +8,11 @@ compatibility_date = "2025-07-01"
 STORE_MODE = "paypal"   # paypal | stripe | reserve
 PAYPAL_ENV = "live"     # live = real money; "sandbox" for test payments
 
+SITE_URL = "https://gspot.world"
+MAIL_FROM = "support@gspot.world"
+BREVO_LIST_ID = "3"
+# POSTAL_ADDRESS = "PO box address here"  # needed before marketing emails (cart reminders) go out
+
 [[d1_databases]]
 binding = "DB"
 database_name = "gspot"
