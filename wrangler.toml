@@ -1,3 +1,14 @@
 name = "gspot-store"
 pages_build_output_dir = "public"
 compatibility_date = "2025-07-01"
+
+# Plain settings. Secrets (PAYPAL_CLIENT_ID, PAYPAL_SECRET, ADMIN_KEY, STRIPE_SECRET_KEY)
+# are added in Cloudflare: Pages project → Settings → Variables and secrets → type "Secret".
+[vars]
+STORE_MODE = "paypal"   # paypal | stripe | reserve
+PAYPAL_ENV = "sandbox"  # sandbox for test payments, live for real money
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gspot"
+database_id = "0f571cd2-0579-4136-bb63-6108190b7bae"
