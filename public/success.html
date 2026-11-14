@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Order confirmed | GSPOT</title>
+<link rel="icon" href="/img/logo.webp">
+<style>
+@font-face{font-family:"Bagel Fat One";src:url(/fonts/bagel.woff2) format("woff2");font-display:swap}
+@font-face{font-family:"Archivo";src:url(/fonts/archivo.woff2) format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+:root{--red:#e3122f}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#060606;color:#f6f3f1;font-family:Archivo,system-ui,sans-serif;padding:24px 16px}
+main{max-width:520px;text-align:center}
+img{width:min(320px,80vw);height:auto}
+h1{font-family:"Bagel Fat One",Archivo,sans-serif;font-weight:400;font-size:clamp(34px,8vw,54px);line-height:1;margin:28px 0 14px;color:var(--red)}
+p{font-size:16px;line-height:1.55;color:#cfc9c7;margin:0 0 10px}
+b{color:#fff}
+a.btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;margin-top:22px;padding:0 30px;border-radius:999px;background:var(--red);color:#fff;font-stretch:75%;font-weight:900;font-size:21px;text-decoration:none}
+a.btn:hover{background:#f41b39}
+</style>
+</head>
+<body>
+<main>
+  <img src="/img/logo.webp" alt="GSPOT" width="899" height="254">
+  <h1>spot claimed.</h1>
+  <p id="msg">Your order is in. A receipt is on its way to your inbox.</p>
+  <p>We'll email tracking as soon as it ships.</p>
+  <a class="btn" href="/">back to the store</a>
+</main>
+<script>
+try{localStorage.removeItem('gspot_cart')}catch(e){}
+(function(){var q=new URLSearchParams(location.search),c=Number(q.get('t'));
+  if(q.get('pp')&&c>0){var m=document.getElementById('msg');m.textContent='';m.append('Paid ');var b=document.createElement('b');b.textContent=(c/100).toLocaleString('en-IE',{style:'currency',currency:'EUR'});m.append(b,'. PayPal has emailed your receipt. Order ');var o=document.createElement('b');o.textContent=q.get('pp');m.append(o,'.')}})();
+(function(){var id=new URLSearchParams(location.search).get('session_id');if(!id)return;
+  fetch('/api/session?session_id='+encodeURIComponent(id)).then(function(r){return r.ok?r.json():null}).then(function(s){if(!s||!s.total)return;
+    var m=document.getElementById('msg'),t=(s.total/100).toLocaleString('en-IE',{style:'currency',currency:(s.currency||'eur').toUpperCase()});
+    m.textContent='';m.append('Paid ');var b=document.createElement('b');b.textContent=t;m.append(b);
+    if(s.email){m.append('. Receipt sent to ');var e=document.createElement('b');e.textContent=s.email;m.append(e)}m.append('.')})})();
+</script>
+</body>
+</html>

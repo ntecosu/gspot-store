@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>GSPOT results</title>
+<link rel="icon" href="/img/logo.webp">
+<style>
+@font-face{font-family:"Archivo";src:url(/fonts/archivo.woff2) format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+:root{--red:#e3122f;--bg:#0b0b0b;--card:#151515;--line:#262626;--mute:#9a9393;--ink:#f6f3f1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Archivo,system-ui,sans-serif;padding:24px 16px 60px}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-stretch:75%;font-weight:900;font-size:32px;margin:0 0 4px;text-transform:lowercase}
+h2{font-stretch:75%;font-weight:800;font-size:20px;margin:34px 0 12px;text-transform:lowercase}
+.sub{color:var(--mute);margin:0 0 20px}
+form{display:flex;gap:10px;flex-wrap:wrap}
+input{flex:1 1 220px;min-height:48px;padding:0 18px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font:inherit}
+button{min-height:48px;padding:0 24px;border:0;border-radius:999px;background:var(--red);color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.err{color:#ff6b7f;min-height:1.4em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi b{display:block;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--mute);font-size:13px}
+.kpi.hot{border-color:var(--red)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+th{color:var(--mute);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:0}
+.empty{color:var(--mute);padding:14px}
+.dl{background:transparent;border:1px solid var(--line);color:var(--ink);min-height:38px;padding:0 16px;font-size:13px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>gspot results</h1>
+  <p class="sub">Orders, visitors and sign-ups. Refresh to update.</p>
+  <form id="f"><input id="k" type="password" placeholder="admin key" autocomplete="current-password" aria-label="Admin key"><button>show</button></form>
+  <p class="err" id="err"></p>
+  <div id="out" hidden>
+    <div class="kpis" id="kpis"></div>
+    <h2>orders</h2><div class="tw"><table id="ord"></table></div><button class="dl" id="dlOrd" type="button">download orders (csv)</button>
+    <h2>per item</h2><div class="tw"><table id="items"></table></div>
+    <h2>reservations</h2><div class="tw"><table id="res"></table></div><button class="dl" id="dlRes" type="button">download reservations (csv)</button>
+    <h2>by day</h2><div class="tw"><table id="days"></table></div>
+    <h2>countries</h2><div class="tw"><table id="ctry"></table></div>
+    <h2>email list</h2><div class="tw"><table id="subs"></table></div><button class="dl" id="dlSubs" type="button">download emails (csv)</button>
+  </div>
+</div>
+<script>
+var $=function(i){return document.getElementById(i)},data=null;
+function table(el,cols,rows){el.textContent='';if(!rows.length){var td=document.createElement('td');td.className='empty';td.textContent='Nothing yet.';el.appendChild(document.createElement('tr')).appendChild(td);return}
+  var h=el.appendChild(document.createElement('tr'));cols.forEach(function(c){h.appendChild(document.createElement('th')).textContent=c[0]});
+  rows.forEach(function(r){var tr=el.appendChild(document.createElement('tr'));cols.forEach(function(c){tr.appendChild(document.createElement('td')).textContent=c[1](r)})})}
+var eur=function(c){return '€'+(c/100).toFixed(2)},when=function(t){return t.replace('T',' ').slice(0,16)};
+function csv(name,rows){var s=rows.map(function(r){return r.map(function(v){v=String(v==null?'':v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'}).join(',')}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv'}));a.download=name;a.click()}
+function load(){var k=$('k').value.trim();try{sessionStorage.setItem('gk',k)}catch(e){}
+  fetch('/api/admin',{headers:{'x-admin-key':k}}).then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d.error||'Error');return d})}).then(function(d){data=d;$('err').textContent='';$('out').hidden=false;
+    var f=d.funnel,v=f.view_item||0,a=f.add_to_cart||0,c=f.begin_checkout||0,r=f.reserve||0;
+    var rev=d.orders.reduce(function(s,o){return s+o.total},0);var k=[['orders',d.orders.length,1],['revenue',eur(rev),1],['product views',v],['add to cart',a],['checkout clicks',c],['emails',d.subscriberCount],['add-to-cart rate',v?Math.round(a/v*100)+'%':'–']];if(r)k.push(['reservations',r]);
+    $('kpis').innerHTML='';k.forEach(function(x){var e=document.createElement('div');e.className='kpi'+(x[2]?' hot':'');e.innerHTML='<b></b><span></span>';e.firstChild.textContent=x[1];e.lastChild.textContent=x[0];$('kpis').appendChild(e)});
+    table($('ord'),[['when',function(r){return when(r.ts)}],['order',function(r){return r.id}],['email',function(r){return r.email||''}],['name',function(r){return r.name||''}],['ship to',function(r){return r.address||''}],['items',function(r){return r.items.map(function(i){return i.q+'× '+i.slug+' '+(i.color||'')+' '+(i.size||'')}).join(', ')}],['paid',function(r){return eur(r.total)}],['code',function(r){return r.code||''}]],d.orders);
+    table($('items'),[['item',function(r){return r.slug}],['views',function(r){return r.views}],['add to cart',function(r){return r.adds}]],d.bySlug);
+    table($('res'),[['when',function(r){return when(r.ts)}],['email',function(r){return r.email}],['items',function(r){return r.items.map(function(i){return i.q+'× '+i.slug+' '+i.size}).join(', ')}],['value',function(r){return eur(r.total)}],['country',function(r){return r.country||''}]],d.reservations);
+    table($('days'),[['day',function(r){return r.day}],['views',function(r){return r.views}],['adds',function(r){return r.adds}],['checkouts',function(r){return r.checkouts}],['reserves',function(r){return r.reserves}]],d.byDay);
+    table($('ctry'),[['country',function(r){return r.country}],['events',function(r){return r.n}]],d.countries);
+    table($('subs'),[['email',function(r){return r.email}],['from',function(r){return r.src}],['when',function(r){return when(r.ts)}],['country',function(r){return r.country||''}]],d.subscribers);
+  }).catch(function(e){$('err').textContent=e.message;$('out').hidden=true})}
+$('f').addEventListener('submit',function(e){e.preventDefault();load()});
+$('dlOrd').addEventListener('click',function(){csv('gspot-orders.csv',[['when','order','email','name','address','items','paid_eur','code','status']].concat(data.orders.map(function(r){return [r.ts,r.id,r.email,r.name,r.address,r.items.map(function(i){return i.q+'x '+i.slug+' '+i.color+' '+i.size}).join('; '),(r.total/100).toFixed(2),r.code,r.status]})))});
+$('dlRes').addEventListener('click',function(){csv('gspot-reservations.csv',[['when','email','items','value_eur','country']].concat(data.reservations.map(function(r){return [r.ts,r.email,r.items.map(function(i){return i.q+'x '+i.slug+' '+i.color+' '+i.size}).join('; '),(r.total/100).toFixed(2),r.country]})))});
+$('dlSubs').addEventListener('click',function(){csv('gspot-emails.csv',[['email','source','when','country']].concat(data.subscribers.map(function(r){return [r.email,r.src,r.ts,r.country]})))});
+try{var g=sessionStorage.getItem('gk');if(g){$('k').value=g;load()}}catch(e){}
+</script>
+</body>
+</html>
