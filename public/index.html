@@ -1084,7 +1084,7 @@ html.pv-open .claim-tab{display:none}
   function setColour(i){var c=cur.colors[i];curC=i;$('pvColour').textContent=c.name;slides(c);
     [].forEach.call($('pvSw').querySelectorAll('button'),function(b,j){b.setAttribute('aria-pressed',j===i)})}
   function openPV(p){
-    cur=p;if(window.gsTrack)gsTrack('view_item',p.slug);$('pvTitle').textContent=p.name;$('pvPrice').textContent=p.price;$('pvMsg').textContent='';
+    cur=p;setTimeout(function(){if(window.gsTrack)gsTrack('view_item',p.slug)},0);$('pvTitle').textContent=p.name;$('pvPrice').textContent=p.price;$('pvMsg').textContent='';
     var sw=$('pvSw');sw.textContent='';
     p.colors.forEach(function(c,i){var b=document.createElement('button');b.type='button';b.style.setProperty('--c',c.hex);b.setAttribute('aria-label',c.name);
       b.addEventListener('click',function(){setColour(i)});var li=document.createElement('li');li.appendChild(b);sw.appendChild(li)});
@@ -1256,7 +1256,7 @@ html.pv-open .claim-tab{display:none}
   $('cartShop').addEventListener('click',function(){closeCart();if(!pv.hidden)$('pvBack').click();else $('shop').scrollIntoView({behavior:'smooth'})});
   // MODE comes from the server: 'stripe' (real checkout), 'reserve' (no payment, collect reservations) or 'preview' (no server)
   function track(e,slug){if(window.gtag)try{gtag('event',e,{item_id:slug||''})}catch(_){}
-    if(MODE==='preview')return;try{fetch('/api/event',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({e:e,slug:slug||''}),keepalive:true})}catch(_){}}
+    if(location.protocol!=='https:'&&location.hostname!=='127.0.0.1')return;try{fetch('/api/event',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({e:e,slug:slug||''}),keepalive:true})}catch(_){}}
   window.gsTrack=track;
   function setMode(m){MODE=m;var go=$('cartGo');
     if(m==='reserve'){go.textContent='reserve';$('cartFine').textContent='Nothing is charged today.';var bp=document.querySelector('.buy__pay');if(bp)bp.textContent='Reserve now, no payment today. Card, Apple Pay and Google Pay when drop 01 opens.'}

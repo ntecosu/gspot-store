@@ -43,7 +43,7 @@ tr:last-child td{border-bottom:0}
     <div class="kpis" id="kpis"></div>
     <h2>orders</h2><div class="tw"><table id="ord"></table></div><button class="dl" id="dlOrd" type="button">download orders (csv)</button>
     <h2>per item</h2><div class="tw"><table id="items"></table></div>
-    <h2>reservations</h2><div class="tw"><table id="res"></table></div><button class="dl" id="dlRes" type="button">download reservations (csv)</button>
+    <div id="resWrap"><h2>reservations</h2><div class="tw"><table id="res"></table></div><button class="dl" id="dlRes" type="button">download reservations (csv)</button></div>
     <h2>by day</h2><div class="tw"><table id="days"></table></div>
     <h2>countries</h2><div class="tw"><table id="ctry"></table></div>
     <h2>email list</h2><div class="tw"><table id="subs"></table></div><button class="dl" id="dlSubs" type="button">download emails (csv)</button>
@@ -64,6 +64,7 @@ function load(){var k=$('k').value.trim();try{sessionStorage.setItem('gk',k)}cat
     $('kpis').innerHTML='';k.forEach(function(x){var e=document.createElement('div');e.className='kpi'+(x[2]?' hot':'');e.innerHTML='<b></b><span></span>';e.firstChild.textContent=x[1];e.lastChild.textContent=x[0];$('kpis').appendChild(e)});
     table($('ord'),[['when',function(r){return when(r.ts)}],['order',function(r){return r.id}],['email',function(r){return r.email||''}],['name',function(r){return r.name||''}],['ship to',function(r){return r.address||''}],['items',function(r){return r.items.map(function(i){return i.q+'× '+i.slug+' '+(i.color||'')+' '+(i.size||'')}).join(', ')}],['paid',function(r){return eur(r.total)}],['code',function(r){return r.code||''}]],d.orders);
     table($('items'),[['item',function(r){return r.slug}],['views',function(r){return r.views}],['add to cart',function(r){return r.adds}]],d.bySlug);
+    $('resWrap').hidden=!d.reservations.length;
     table($('res'),[['when',function(r){return when(r.ts)}],['email',function(r){return r.email}],['items',function(r){return r.items.map(function(i){return i.q+'× '+i.slug+' '+i.size}).join(', ')}],['value',function(r){return eur(r.total)}],['country',function(r){return r.country||''}]],d.reservations);
     table($('days'),[['day',function(r){return r.day}],['views',function(r){return r.views}],['adds',function(r){return r.adds}],['checkouts',function(r){return r.checkouts}],['reserves',function(r){return r.reserves}]],d.byDay);
     table($('ctry'),[['country',function(r){return r.country}],['events',function(r){return r.n}]],d.countries);
