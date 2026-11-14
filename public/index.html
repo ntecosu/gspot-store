@@ -169,6 +169,32 @@ button,input{font:inherit;color:inherit}
 
 
 /* store: ticker, filters, quick button, cart */
+.pill--loc{padding:0 14px;letter-spacing:.06em}
+.nav .pill{white-space:nowrap}
+@media (max-width:460px){#navCta{display:none}}
+.pv__right{display:flex;gap:8px;align-items:center}
+.pv__loc{min-height:40px;padding:0 14px;border:1px solid #0b0b0b;border-radius:999px;background:#fff;color:#0b0b0b;font-stretch:80%;font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.pv__loc:hover{background:#0b0b0b;color:#fff}
+.ft__region.locBtn{background:none;border:0;padding:0;color:inherit;font:inherit;letter-spacing:.12em;text-transform:uppercase;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.ft__region.locBtn:hover{color:var(--red)}
+.buy__ship{margin:-4px 0 14px;font-size:13px;color:#6d6869}
+.buy__ship b{color:#0b0b0b;font-weight:700}
+.loc{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.55);opacity:0;transition:opacity .2s}
+.loc.is-on{opacity:1}
+.loc[hidden]{display:none}
+.loc__box{position:relative;width:min(440px,100%);background:#fff;color:#0b0b0b;border-radius:24px;padding:28px 24px 24px;transform:translateY(12px);transition:transform .2s}
+.loc.is-on .loc__box{transform:none}
+.loc__box h2{margin:0 0 6px;font-family:"Bagel Fat One",Archivo,sans-serif;font-weight:400;font-size:30px;line-height:1.05;color:var(--red);text-transform:lowercase}
+.loc__sub{margin:0 0 18px;font-size:14px;color:#6d6869}
+.loc__x{position:absolute;top:12px;right:14px;width:40px;height:40px;border:0;background:none;font-size:28px;line-height:1;cursor:pointer;color:#0b0b0b}
+.loc__f{display:grid;gap:6px;margin:0 0 14px}
+.loc__f span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6d6869}
+.loc__f select{min-height:50px;padding:0 16px;border:1px solid #dcd9d9;border-radius:14px;background:#fff;color:#0b0b0b;font:inherit;font-size:16px}
+.loc__f select:focus{outline:2px solid var(--red);outline-offset:1px}
+.loc__note{min-height:1.2em;margin:2px 0 16px;font-size:13px;line-height:1.45;color:#6d6869}
+.loc__go{width:100%}
+@media (prefers-reduced-motion:reduce){.loc,.loc__box{transition:none}}
+.cart__eur{margin:2px 0 0;font-size:12px;color:#6d6869}
 .pill--cart b,.pv__cart b{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:4px;padding:0 5px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
 .pv__bar{gap:16px}.pv__crumb{margin-left:auto}
 .pv__cart{min-height:40px;padding:0 14px;border:1px solid #0b0b0b;border-radius:999px;background:#fff;color:#0b0b0b;font-stretch:80%;font-weight:800;font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
@@ -456,6 +482,7 @@ html.pv-open .claim-tab{display:none}
 <header class="nav gutter">
   <button class="pill" id="sound" type="button" aria-pressed="true">sound on</button>
   <a class="pill" href="#signup" id="navCta">claim your spot</a>
+  <button class="pill pill--loc locBtn" type="button" aria-label="Change location and currency"><span class="locTxt">eur</span></button>
   <button class="pill pill--cart" id="cartBtn" type="button" aria-label="Open cart">cart <b class="cartN">0</b></button>
 </header>
 
@@ -570,7 +597,7 @@ html.pv-open .claim-tab{display:none}
     </div>
   </div>
   <div class="ft__bar gutter">
-    <span class="ft__region">worldwide (EUR €)</span>
+    <button class="ft__region locBtn" type="button" aria-label="Change location and currency"><span class="locLong">worldwide (EUR €)</span></button>
     <span class="ft__copy">&copy; 2026 GSPOT</span>
     <ul class="ft__pay" aria-label="Payment methods"><li>visa</li><li>mastercard</li><li>amex</li><li>apple pay</li><li>google pay</li><li>paypal</li></ul>
   </div>
@@ -604,6 +631,17 @@ html.pv-open .claim-tab{display:none}
 </div>
 <button class="claim-tab" id="claimTab" type="button" hidden>claim 10% off</button>
 
+<div class="loc" id="loc" hidden>
+  <div class="loc__box" role="dialog" aria-modal="true" aria-labelledby="locTitle">
+    <button class="loc__x" id="locX" type="button" aria-label="Close">&times;</button>
+    <h2 id="locTitle">location &amp; currency</h2>
+    <p class="loc__sub">Prices, delivery times and shipping update for where you are.</p>
+    <label class="loc__f"><span>Ship to</span><select id="locCountry"></select></label>
+    <label class="loc__f"><span>Currency</span><select id="locCur"></select></label>
+    <p class="loc__note" id="locNote"></p>
+    <button class="btn loc__go" id="locGo" type="button">save</button>
+  </div>
+</div>
 <div class="cart" id="cart" hidden>
   <div class="cart__panel" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
     <div class="cart__head"><h2 id="cartTitle">cart <span class="cartN">0</span></h2><button class="cart__x" id="cartX" type="button" aria-label="Close cart">&times;</button></div>
@@ -663,7 +701,7 @@ html.pv-open .claim-tab{display:none}
 </div>
 
 <div class="pv" id="pv" hidden role="dialog" aria-modal="true" aria-labelledby="pvTitle">
-  <div class="pv__bar gutter"><button class="pv__back" id="pvBack" type="button">&larr; all items</button><span class="pv__crumb" id="pvCrumb">drop 01</span><button class="pv__cart" id="pvCart" type="button" aria-label="Open cart">cart <b class="cartN">0</b></button></div>
+  <div class="pv__bar gutter"><button class="pv__back" id="pvBack" type="button">&larr; all items</button><span class="pv__crumb" id="pvCrumb">drop 01</span><span class="pv__right"><button class="pv__loc locBtn" type="button" aria-label="Change location and currency"><span class="locTxt">eur</span></button><button class="pv__cart" id="pvCart" type="button" aria-label="Open cart">cart <b class="cartN">0</b></button></span></div>
   <div class="pv__main gutter">
     <div class="gal">
       <div class="gal__track" id="galTrack" tabindex="0" aria-label="Product photos"></div>
@@ -680,6 +718,7 @@ html.pv-open .claim-tab{display:none}
       <button class="btn buy__add" id="pvAdd" type="button">add to cart</button>
       <p class="buy__msg" id="pvMsg" role="status"></p>
       <p class="buy__pay">Card or PayPal at checkout</p>
+      <p class="buy__ship" id="pvShip"></p>
       <div class="acc" id="pvAcc"></div>
     </div>
   </div>
@@ -1049,7 +1088,7 @@ html.pv-open .claim-tab{display:none}
       }
       var meta=document.createElement('div');meta.className='item__meta';
       meta.innerHTML='<p class="item__name"></p><p class="item__price"></p>';
-      meta.firstChild.textContent=p.name;meta.children[1].textContent=p.soon?'—':p.price;
+      meta.firstChild.textContent=p.name;if(p.soon)meta.children[1].textContent='—';else{meta.children[1].setAttribute('data-eur',priceOf(p));meta.children[1].textContent=fmt(priceOf(p))}
       if(p.colors){var ul=document.createElement('ul');ul.className='sw';
         p.colors.forEach(function(c,ci){var b=document.createElement('button');b.type='button';b.style.setProperty('--c',c.hex);
           b.setAttribute('aria-label',p.name+' in '+c.name);b.setAttribute('aria-pressed',ci===0);
@@ -1084,7 +1123,7 @@ html.pv-open .claim-tab{display:none}
   function setColour(i){var c=cur.colors[i];curC=i;$('pvColour').textContent=c.name;slides(c);
     [].forEach.call($('pvSw').querySelectorAll('button'),function(b,j){b.setAttribute('aria-pressed',j===i)})}
   function openPV(p){
-    cur=p;setTimeout(function(){if(window.gsTrack)gsTrack('view_item',p.slug)},0);$('pvTitle').textContent=p.name;$('pvPrice').textContent=p.price;$('pvMsg').textContent='';
+    cur=p;setTimeout(function(){if(window.gsTrack)gsTrack('view_item',p.slug)},0);$('pvTitle').textContent=p.name;$('pvPrice').setAttribute('data-eur',priceOf(p));$('pvPrice').textContent=fmt(priceOf(p));pvShipLine();$('pvMsg').textContent='';
     var sw=$('pvSw');sw.textContent='';
     p.colors.forEach(function(c,i){var b=document.createElement('button');b.type='button';b.style.setProperty('--c',c.hex);b.setAttribute('aria-label',c.name);
       b.addEventListener('click',function(){setColour(i)});var li=document.createElement('li');li.appendChild(b);sw.appendChild(li)});
@@ -1216,15 +1255,64 @@ html.pv-open .claim-tab{display:none}
     if(f&&f.badge){el.hidden=false;el.textContent=f.badge}else el.hidden=true};
   if(cur)_fitBadge(cur);
   // ---- store: ticker, filters, cart
-  var FREE=80;
-  (function(){var run=document.querySelector('.tick__run'),s='';for(var i=0;i<12;i++)s+='<span><i>&#9679;</i>'+(i%2?'drop 01: the dice cap is live':'free worldwide shipping on orders over €'+FREE)+'</span>';run.innerHTML=s})();
+  var FREE=80,SHIPFEE=5.99;
+  // ---- location & currency: display prices in the visitor's currency; PayPal still charges in EUR
+  var SHIP_TO=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','GB','CH','NO','IS','US','CA','AU','NZ','JP','KR','SG','HK','AE','IL'];
+  var EU=['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE'];
+  var CURS=['EUR','USD','GBP','CAD','AUD','CHF','SEK','NOK','DKK','PLN','CZK','JPY','AED'];
+  var CUR_OF={US:'USD',GB:'GBP',CA:'CAD',AU:'AUD',CH:'CHF',SE:'SEK',NO:'NOK',DK:'DKK',PL:'PLN',CZ:'CZK',JP:'JPY',AE:'AED'};
+  var RATES={EUR:1,USD:1.08,GBP:.85,CAD:1.5,AUD:1.65,CHF:.95,SEK:11.4,NOK:11.6,DKK:7.46,PLN:4.3,CZK:25.2,JPY:165,AED:3.97},RATEDATE='';
+  var LOC={country:'',cur:'EUR'},LK='gspot_loc',locSaved=false;
+  try{var _l=JSON.parse(localStorage.getItem(LK)||'null');if(_l&&_l.cur&&CURS.indexOf(_l.cur)>-1){LOC=_l;locSaved=true}}catch(e){}
+  var DN=null;try{DN=new Intl.DisplayNames(['en'],{type:'region'})}catch(e){}
+  function cname(c){if(!c)return 'Worldwide';if(c==='XX')return 'Other countries';try{return DN?DN.of(c):c}catch(e){return c}}
+  function locName(short){return LOC.country&&LOC.country!=='XX'?cname(LOC.country):(short?'worldwide':'Worldwide')}
+  function fmt(eur){eur=+eur||0;var c=LOC&&LOC.cur||'EUR';if(c==='EUR')return '€'+eur.toFixed(2);
+    var v=eur*(RATES[c]||1);try{return new Intl.NumberFormat('en-'+(LOC.country&&LOC.country.length===2?LOC.country:'US'),{style:'currency',currency:c,maximumFractionDigits:c==='JPY'?0:2,minimumFractionDigits:c==='JPY'?0:2}).format(v)}catch(e){return c+' '+v.toFixed(2)}}
+  function fmtR(eur){var c=LOC&&LOC.cur||'EUR';if(c==='EUR')return '€'+Math.round(eur);var v=Math.round(eur*(RATES[c]||1));try{return new Intl.NumberFormat('en-'+(LOC.country&&LOC.country.length===2?LOC.country:'US'),{style:'currency',currency:c,maximumFractionDigits:0}).format(v)}catch(e){return c+' '+v}}
+  function region(){var c=LOC.country;if(!c||c==='XX')return 'row';if(EU.indexOf(c)>-1)return 'eu';if(['GB','CH','NO','IS'].indexOf(c)>-1)return 'eur';if(['US','CA'].indexOf(c)>-1)return 'na';return 'row'}
+  function eta(p){var r=region();if(p&&p.pick)return r==='eu'?'8–22':'10–25';return {eu:'5–15',eur:'6–17',na:'6–17',row:'7–22'}[r]}
+  function pvShipLine(){var el=$('pvShip');if(!el||!cur||!LOC)return;var r=region();el.innerHTML='';
+    var b=document.createElement('b');b.textContent=(LOC.country&&LOC.country!=='XX'?'Ships to '+cname(LOC.country):'Ships worldwide');el.appendChild(b);
+    el.appendChild(document.createTextNode(' · est. '+eta(cur)+' business days · '+fmt(SHIPFEE)+' shipping, free over '+fmtR(FREE)+(r==='eu'?'':'. Import duties may apply.')))}
+  function cartFineText(sub,n){var el=$('cartFine');if(!el)return;if(MODE==='reserve'){el.textContent='Nothing is charged today.';return}
+    var s=(sub==null?0:sub),ship=s>=FREE||!n?0:SHIPFEE,txt='Shipping '+fmt(SHIPFEE)+', free over '+fmtR(FREE)+'.';
+    if(LOC.cur!=='EUR'&&n)txt+=' You pay in euros: about €'+(s+ship).toFixed(2)+' incl. shipping. Prices in '+LOC.cur+' are approximate.';
+    else if(LOC.cur!=='EUR')txt+=' You pay in euros; prices in '+LOC.cur+' are approximate.';
+    el.textContent=txt+(MODE==='paypal'?' Pay with PayPal or card.':'')}
+  function refreshLoc(){[].forEach.call(document.querySelectorAll('[data-eur]'),function(e){e.textContent=fmt(+e.getAttribute('data-eur'))});
+    var sym={EUR:'€',USD:'$',GBP:'£'}[LOC.cur]||'';
+    [].forEach.call(document.querySelectorAll('.locTxt'),function(e){e.textContent=(LOC.country&&LOC.country!=='XX'?LOC.country+' · ':'')+LOC.cur.toLowerCase()});
+    [].forEach.call(document.querySelectorAll('.locLong'),function(e){e.textContent=locName()+' ('+LOC.cur+(sym?' '+sym:'')+')'});
+    if(typeof drawTick==='function')drawTick();if(cur)pvShipLine();if(typeof drawCart==='function')drawCart()}
+  // country & currency pickers
+  (function(){var cs=$('locCountry'),cu=$('locCur'),list=SHIP_TO.slice().sort(function(a,b){return cname(a).localeCompare(cname(b))});
+    list.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=cname(c);cs.appendChild(o)});
+    var o=document.createElement('option');o.value='XX';o.textContent='Other countries';cs.appendChild(o);
+    CURS.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c+(c==='EUR'?' (charged currency)':'');cu.appendChild(o)});
+    cs.addEventListener('change',function(){if(CUR_OF[cs.value])cu.value=CUR_OF[cs.value];else if(EU.indexOf(cs.value)>-1)cu.value='EUR';locNote()});
+    cu.addEventListener('change',locNote)})();
+  function locNote(){var c=$('locCountry').value,u=$('locCur').value,eu=EU.indexOf(c)>-1;
+    $('locNote').textContent=(u!=='EUR'?'Checkout is in euros; PayPal or your bank converts at their rate. ':'')+(c==='XX'?'We ship to most countries. Email us if you are unsure about yours.':eu?'No customs inside the EU.':'Import duties may apply on arrival.')}
+  var locEl=$('loc'),locOpen=false,locFocus=null;
+  function openLoc(){if(locOpen)return;locOpen=true;locFocus=document.activeElement;$('locCountry').value=LOC.country&&SHIP_TO.concat('XX').indexOf(LOC.country)>-1?LOC.country:'XX';$('locCur').value=LOC.cur;locNote();
+    locEl.hidden=false;root.classList.add('modal');requestAnimationFrame(function(){locEl.classList.add('is-on');$('locCountry').focus({preventScroll:true})})}
+  function closeLoc(){if(!locOpen)return;locOpen=false;locEl.classList.remove('is-on');root.classList.remove('modal');setTimeout(function(){locEl.hidden=true},200);if(locFocus&&locFocus.focus)locFocus.focus({preventScroll:true})}
+  [].forEach.call(document.querySelectorAll('.locBtn'),function(b){b.addEventListener('click',openLoc)});
+  $('locX').addEventListener('click',closeLoc);locEl.addEventListener('click',function(e){if(e.target===locEl)closeLoc()});
+  window.addEventListener('keydown',function(e){if(locOpen&&e.key==='Escape'){e.stopImmediatePropagation();closeLoc()}},true);
+  $('locGo').addEventListener('click',function(){LOC={country:$('locCountry').value,cur:$('locCur').value};locSaved=true;try{localStorage.setItem(LK,JSON.stringify(LOC))}catch(e){}refreshLoc();closeLoc()});
+  // live rates and the visitor's country (from the server)
+  try{fetch('/api/rates').then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.rates){for(var k in d.rates)RATES[k]=d.rates[k];RATEDATE=d.date||'';refreshLoc()}},function(){})}catch(e){}
+  function drawTick(){var run=document.querySelector('.tick__run'),s='';for(var i=0;i<12;i++)s+='<span><i>&#9679;</i>'+(i%2?'drop 01: the dice cap is live':'free shipping to '+locName(true)+' on orders over '+fmtR(FREE))+'</span>';run.innerHTML=s}
+  drawTick();
   [].forEach.call(document.querySelectorAll('.filt__b'),function(b){b.addEventListener('click',function(){FILT=b.getAttribute('data-f');
     [].forEach.call(document.querySelectorAll('.filt__b'),function(x){x.setAttribute('aria-pressed',x===b)});renderGrid($('grid'),$('shopCount'))})});
   var CODES={GSPOT10:10},CODE='',MODE='preview';
   var CK='gspot_cart',cartEl=$('cart'),cart=[],cartOpen=false,cartFocus=null;
   try{cart=JSON.parse(localStorage.getItem(CK)||'[]')||[]}catch(e){cart=[]}
   cart=cart.filter(function(l){return PRODUCTS.some(function(p){return p.slug===l.slug})});
-  function money(n){return '€'+n.toFixed(2)}
+  function money(n){return fmt(n)}
   function priceOf(p){return parseFloat(String(p.price).replace(/[^0-9.]/g,''))||0}
   function saveCart(){try{localStorage.setItem(CK,JSON.stringify(cart))}catch(e){}}
   function drawCart(){
@@ -1243,7 +1331,7 @@ html.pv-open .claim-tab{display:none}
     [].forEach.call(document.querySelectorAll('.cartN'),function(e){e.textContent=n});
     $('cartEmpty').hidden=n>0;$('cartFoot').hidden=n===0;list.hidden=n===0;
     $('cartTotal').textContent=money(total);$('cartMsg').textContent='';var pct=CODE?CODES[CODE]:0,dc=Math.round(total*pct)/100;$('cartDisc').hidden=!pct||n===0;if(pct){$('cartDiscL').textContent=CODE+' ('+pct+'% off)';$('cartDiscV').textContent='−'+money(dc)}var cg=$('cartGo');cg.disabled=false;cg.hidden=MODE==='paypal';$('cartRes').hidden=true;if(MODE==='reserve')cg.textContent='reserve';
-    var left=FREE-total;$('cartShip').textContent=n===0?'Free worldwide shipping on orders over €'+FREE+'.':left>0?'Add '+money(left)+' more for free worldwide shipping.':'You have free worldwide shipping.';
+    var left=FREE-total;$('cartShip').textContent=n===0?'Free shipping on orders over '+fmtR(FREE)+'.':left>0?'Add '+money(left)+' more for free shipping.':'You have free shipping.';cartFineText(total-dc,n);
     $('cartBar').style.width=Math.min(100,total/FREE*100)+'%';
   }
   function openCart(){if(cartOpen)return;cartOpen=true;cartFocus=document.activeElement;drawCart();cartEl.hidden=false;root.classList.add('modal');
@@ -1260,7 +1348,7 @@ html.pv-open .claim-tab{display:none}
   window.gsTrack=track;
   function setMode(m){MODE=m;var go=$('cartGo');
     if(m==='reserve'){go.textContent='reserve';$('cartFine').textContent='Nothing is charged today.';var bp=document.querySelector('.buy__pay');if(bp)bp.textContent='Reserve now, no payment today. Card, Apple Pay and Google Pay when drop 01 opens.'}
-    else if(m==='paypal'){go.hidden=true;$('cartPP').hidden=false;$('cartFine').textContent='Shipping €5.99 worldwide, free over €'+FREE+'. Pay with PayPal or card.';
+    else if(m==='paypal'){go.hidden=true;$('cartPP').hidden=false;cartFineText();
       var fp=document.querySelector('.ft__pay');if(fp)fp.innerHTML='<li>visa</li><li>mastercard</li><li>amex</li><li>paypal</li>';loadPP()}
     else{go.textContent='checkout';$('cartFine').textContent='Shipping and taxes are calculated at checkout.'}}
   var PPID='',ppLoaded=false;
@@ -1285,7 +1373,7 @@ html.pv-open .claim-tab{display:none}
   $('cartCode').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();applyCode()}});
   function applyCode(){var v=$('cartCode').value.trim().toUpperCase();if(!v){CODE='';drawCart();return}
     if(CODES[v]){CODE=v;drawCart();$('cartMsg').textContent=v+' applied.'}else{CODE='';drawCart();$('cartMsg').textContent="That code doesn't work."}}
-  try{fetch('/api/config').then(function(r){return r.ok?r.json():null}).then(function(c){if(c&&c.paypalClientId)PPID=c.paypalClientId;if(c&&c.mode)setMode(c.mode)},function(){})}catch(e){}
+  try{fetch('/api/config').then(function(r){return r.ok?r.json():null}).then(function(c){if(c&&c.country&&!locSaved){var cc=c.country.toUpperCase();LOC={country:SHIP_TO.indexOf(cc)>-1?cc:'XX',cur:CUR_OF[cc]||'EUR'};refreshLoc()}if(c&&c.paypalClientId)PPID=c.paypalClientId;if(c&&c.mode)setMode(c.mode)},function(){})}catch(e){}
   function cartItems(){return cart.map(function(l){return {slug:l.slug,c:l.c,s:l.s,q:l.q}})}
   $('cartGo').addEventListener('click',function(){var go=$('cartGo'),msg=$('cartMsg');msg.textContent='';
     if(!cart.length)return;
@@ -1305,7 +1393,7 @@ html.pv-open .claim-tab{display:none}
       .then(function(){$('cartRes').hidden=true;var cg=$('cartGo');cg.hidden=false;cg.disabled=true;cg.textContent='reserved ✓';b.disabled=false;
         msg.textContent="You're on the list. We'll email you first when drop 01 opens, with your 10% code.";if(window.gtag)try{gtag('event','reserve')}catch(_){}})
       .catch(function(err){b.disabled=false;msg.textContent=err.message||'Something went wrong. Try again.'})});
-  drawCart();
+  drawCart();refreshLoc();
   $('pvAdd').addEventListener('click',function(){if(!cur)return;var sb=$('pvSizes').querySelector('[aria-pressed="true"]'),s=sb?sb.textContent:'One size';
     var l=cart.filter(function(x){return x.slug===cur.slug&&x.c===curC&&x.s===s})[0];if(l)l.q=Math.min(9,l.q+1);else cart.push({slug:cur.slug,c:curC,s:s,q:1});
     saveCart();clack(.08,1800);track('add_to_cart',cur.slug);openCart()});
