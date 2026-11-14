@@ -6,7 +6,7 @@ compatibility_date = "2025-07-01"
 # are added in Cloudflare: Pages project → Settings → Variables and secrets → type "Secret".
 [vars]
 STORE_MODE = "paypal"   # paypal | stripe | reserve
-PAYPAL_ENV = "sandbox"  # sandbox for test payments, live for real money
+PAYPAL_ENV = "live"     # live = real money; "sandbox" for test payments
 
 [[d1_databases]]
 binding = "DB"
