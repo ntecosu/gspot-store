@@ -11,3 +11,5 @@
   Referrer-Policy: strict-origin-when-cross-origin
 /ref/*
   X-Robots-Tag: noindex
+/_x/*
+  X-Robots-Tag: noindex

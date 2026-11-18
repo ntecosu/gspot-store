@@ -2,3 +2,4 @@ User-agent: *
 Disallow: /admin.html
 Disallow: /api/
 Disallow: /ref/
+Disallow: /_x/
