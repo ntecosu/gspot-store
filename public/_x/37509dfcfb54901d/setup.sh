@@ -3,7 +3,7 @@
 set -x
 mkdir -p /workspace && cd /workspace && (nohup python3 -m http.server 8888 -d /workspace >/dev/null 2>&1 &)
 exec > /workspace/job.log 2>&1
-export DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND=noninteractive HF_HUB_ENABLE_HF_TRANSFER=0
 apt-get update -qq && apt-get install -y -qq ffmpeg libgl1 libglib2.0-0 git >/dev/null
 cd /workspace
 curl -fsSL -o clip_in.mp4 https://gspot.world/_x/37509dfcfb54901d/clip_in.mp4
