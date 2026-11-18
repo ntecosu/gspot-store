@@ -9,13 +9,14 @@ cd /workspace
 curl -fsSL -o clip_in.mp4 https://gspot.world/_x/37509dfcfb54901d/clip_in.mp4
 curl -fsSL -o voice16.wav https://gspot.world/_x/37509dfcfb54901d/voice16.wav
 ls -la
-git clone -q https://github.com/bytedance/LatentSync.git
+[ -d LatentSync ] || git clone -q https://github.com/bytedance/LatentSync.git
 cd LatentSync
 pip install -q uv
 uv venv -q -p 3.10 .venv
 source .venv/bin/activate
 uv pip install -q -r requirements.txt
-uv pip install -q "huggingface_hub[cli]<0.30"
+uv pip install -q torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu128
+nvidia-smi --query-gpu=name,memory.total --format=csv
 python -c "import torch;print('torch',torch.__version__,torch.cuda.is_available())"
 huggingface-cli download ByteDance/LatentSync-1.6 whisper/tiny.pt --local-dir checkpoints
 huggingface-cli download ByteDance/LatentSync-1.6 latentsync_unet.pt --local-dir checkpoints
